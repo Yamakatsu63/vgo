@@ -15,29 +15,25 @@ type Bitvec64 struct {
 	value uint64
 	mask  uint64
 	undef uint64
-	in    []<-chan uint64 // 読み取り専用のチャンネルの配列
-	out   chan<- uint64   // 書き込み専用のチャンネル
 }
 
-func NewWire64(mask uint64, in []<-chan uint64) *Bitvec64 {
+func NewWire64(mask uint64) *Bitvec64 {
 	return &Bitvec64{
 		value: 0x0,
 		mask:  mask,
-		in:    in,
 	}
 }
 
-func NewReg64(mask uint64, out chan<- uint64) *Bitvec64 {
+func NewReg64(mask uint64) *Bitvec64 {
 	return &Bitvec64{
 		value: 0xffffffffffffffff & mask,
 		mask:  mask,
-		out:   out,
 	}
 }
 
 func (b *Bitvec64) Set(x uint64) {
 	b.value = x & b.mask
-	b.out <- b.value
+	// b.out <- b.value
 }
 
 func (b *Bitvec64) Add(x *Bitvec64) *Bitvec64 {

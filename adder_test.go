@@ -2,39 +2,38 @@ package vgo
 
 import (
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAdder(t *testing.T) {
-	signal1 := make(chan uint64)
-	signal2 := make(chan uint64)
-	a := NewReg64(Bitmask64[3], signal1)
-	b := NewReg64(Bitmask64[3], signal2)
-	q := NewWire64(Bitmask64[3], []<-chan uint64{signal1, signal2})
+	signal1 := make(chan []Bitvec64)
+	signal2 := make(chan Bitvec64)
+	a := NewReg64(Bitmask64[3])
+	b := NewReg64(Bitmask64[3])
+	// q := NewWire64(Bitmask64[3])
+
+	adder := Adder{
+		// a:   a,
+		// b:   b,
+		// q:   q,
+		in:  signal1,
+		out: signal2,
+	}
 
 	go func() {
-		defer close(a.out)
-		defer close(b.out)
+		defer close(signal1)
 		a.Set(1)
-		time.Sleep(1 * time.Nanosecond)
-		// x := 1 + 4
-		assert.Equal(t, int(q.value), 1)
+		b.Set(0)
+		//モジュールに信号を流す
+		signal1 <- []Bitvec64{*a, *b}
 		a.Set(5)
-		time.Sleep(1 * time.Nanosecond)
-		assert.Equal(t, int(q.value), 5)
+		signal1 <- []Bitvec64{*a, *b}
 		b.Set(4)
-		time.Sleep(1 * time.Nanosecond)
-		assert.Equal(t, int(q.value), 1)
+		signal1 <- []Bitvec64{*a, *b}
 		b.Set(7)
-		time.Sleep(1 * time.Nanosecond)
-		assert.Equal(t, int(q.value), 4)
+		signal1 <- []Bitvec64{*a, *b}
 		a.Set(3)
-		time.Sleep(1 * time.Nanosecond)
-		assert.Equal(t, int(q.value), 2)
-		// fmt.Println(x)
+		signal1 <- []Bitvec64{*a, *b}
 	}()
 
-	q.Assign([]Bitvec64{*a, *b})
+	adder.Assign()
 }
