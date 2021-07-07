@@ -12,9 +12,6 @@ func TestAdder(t *testing.T) {
 	// q := NewWire64(Bitmask64[3])
 
 	adder := Adder{
-		// a:   a,
-		// b:   b,
-		// q:   q,
 		in:  signal1,
 		out: signal2,
 	}
