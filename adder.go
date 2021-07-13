@@ -1,31 +1,41 @@
 package vgo
 
-import "fmt"
-
 type Adder struct {
-	// a, b, q *Bitvec64
-	in  chan []Bitvec64
-	out chan Bitvec64
+	a *Bitvec64
+	b *Bitvec64
+	q *Bitvec64
 }
 
-func (adder *Adder) Assign() {
-	a := NewReg64(Bitmask64[3])
-	b := NewReg64(Bitmask64[3])
-	q := NewReg64(Bitmask64[3])
+func NewAdder(in []chan uint64, out chan uint64) *Adder {
+	adder := &Adder{NewReg64(Bitmask64[3]), NewReg64(Bitmask64[3]), NewWire64(Bitmask64[3])}
+	go adder.run(in, out)
+	return adder
+}
+
+func (adder *Adder) exec() {
+	adder.q.value = (adder.a.value + adder.b.value) & adder.q.mask
+}
+
+func (adder *Adder) run(in []chan uint64, out chan uint64) {
+	defer close(out)
 	for {
 		select {
-		case n, ok := <-adder.in:
+		case a, ok := <-in[0]:
 			if ok {
-				a.value = n[0].value & a.mask
-				b.value = n[1].value & b.mask
-				q.value = (a.value + b.value) & q.mask
-				fmt.Println(q.value)
-				// アウトチャンネルに信号を送信
-				go func() {
-					adder.out <- *q
-				}()
+				// 値を更新
+				adder.a.value = a & adder.a.mask
+				adder.exec()
+				out <- adder.q.value
 			} else {
-				// チャンネルがクローズされると終了
+				return
+			}
+		case b, ok := <-in[1]:
+			if ok {
+				// 値を更新
+				adder.b.value = b & adder.b.mask
+				adder.exec()
+				out <- adder.q.value
+			} else {
 				return
 			}
 		}

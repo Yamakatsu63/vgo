@@ -1,45 +1,45 @@
 package vgo
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestFullAdder(t *testing.T) {
-	signal1 := make(chan []Bitvec64)
-	signal2 := make(chan []Bitvec64)
-	a := NewReg64(Bitmask64[1])
-	b := NewReg64(Bitmask64[1])
-	cin := NewWire64(Bitmask64[1])
+	a := make(chan uint64)
+	b := make(chan uint64)
+	cin := make(chan uint64)
+	q := make(chan uint64)
+	cout := make(chan uint64)
 
-	fulladder := Fulladder{
-		in:  signal1,
-		out: signal2,
-	}
+	NewFullAdder([]chan uint64{a, b, cin}, []chan uint64{q, cout})
 
 	go func() {
-		defer close(signal1)
-		a.Set(0)
-		b.Set(0)
-		cin.Set(0)
-		//モジュールに信号を流す
-		signal1 <- []Bitvec64{*a, *b, *cin}
-		a.Set(1)
-		b.Set(0)
-		cin.Set(0)
-		signal1 <- []Bitvec64{*a, *b, *cin}
-		a.Set(1)
-		b.Set(0)
-		cin.Set(1)
-		signal1 <- []Bitvec64{*a, *b, *cin}
-		a.Set(1)
-		b.Set(1)
-		cin.Set(0)
-		signal1 <- []Bitvec64{*a, *b, *cin}
-		a.Set(1)
-		b.Set(1)
-		cin.Set(1)
-		signal1 <- []Bitvec64{*a, *b, *cin}
+		defer close(a)
+		defer close(b)
+		defer close(cin)
+		a <- 1
+		b <- 1
+		cin <- 1
+		a <- 0
 	}()
 
-	fulladder.Assign()
+	for {
+		select {
+		case q, ok := <-q:
+			if ok {
+				fmt.Printf("q: %d\n", q)
+			} else {
+				// アウトプットチャンネルがクローズされたら終了
+				return
+			}
+		case cout, ok := <-cout:
+			if ok {
+				fmt.Printf("cout: %d\n", cout)
+			} else {
+				// アウトプットチャンネルがクローズされたら終了
+				return
+			}
+		}
+	}
 }

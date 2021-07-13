@@ -1,36 +1,35 @@
 package vgo
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestAdder(t *testing.T) {
-	signal1 := make(chan []Bitvec64)
-	signal2 := make(chan Bitvec64)
-	a := NewReg64(Bitmask64[3])
-	b := NewReg64(Bitmask64[3])
-	// q := NewWire64(Bitmask64[3])
+	a := make(chan uint64)
+	b := make(chan uint64)
+	q := make(chan uint64)
 
-	adder := Adder{
-		in:  signal1,
-		out: signal2,
-	}
+	NewAdder([]chan uint64{a, b}, q)
 
 	go func() {
-		defer close(signal1)
-		a.Set(1)
-		b.Set(0)
-		//モジュールに信号を流す
-		signal1 <- []Bitvec64{*a, *b}
-		a.Set(5)
-		signal1 <- []Bitvec64{*a, *b}
-		b.Set(4)
-		signal1 <- []Bitvec64{*a, *b}
-		b.Set(7)
-		signal1 <- []Bitvec64{*a, *b}
-		a.Set(3)
-		signal1 <- []Bitvec64{*a, *b}
+		defer close(a)
+		defer close(b)
+		// defer close(q)
+		a <- 1
+		b <- 2
+		b <- 4
 	}()
 
-	adder.Assign()
+	for {
+		select {
+		case q, ok := <-q:
+			if ok {
+				fmt.Println(q)
+			} else {
+				// アウトプットチャンネルがクローズされたら終了
+				return
+			}
+		}
+	}
 }

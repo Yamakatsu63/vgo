@@ -21,13 +21,15 @@ func NewWire64(mask uint64) *Bitvec64 {
 	return &Bitvec64{
 		value: 0x0,
 		mask:  mask,
+		undef: 0xffffffffffffffff & mask,
 	}
 }
 
 func NewReg64(mask uint64) *Bitvec64 {
 	return &Bitvec64{
-		value: 0xffffffffffffffff & mask,
+		value: 0x0,
 		mask:  mask,
+		undef: 0xffffffffffffffff & mask,
 	}
 }
 
@@ -37,6 +39,7 @@ func (b *Bitvec64) Set(x uint64) {
 }
 
 func (b *Bitvec64) Add(x *Bitvec64) *Bitvec64 {
+	// fmt.Println(b.value)
 	b.value += x.value & b.mask
 	b.value &= b.mask
 	b.undef |= x.undef
