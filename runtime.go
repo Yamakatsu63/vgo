@@ -51,3 +51,13 @@ func (b *Bitvec64) Add(x *Bitvec64) *Bitvec64 {
 	b.undef |= x.undef
 	return b
 }
+
+func (b *Bitvec64) Reductionor() *Bitvec64 {
+	result := NewWire64(1)
+	if b.value >= 1 {
+		result.value = 1
+	} else {
+		result.value = 0
+	}
+	return result
+}
