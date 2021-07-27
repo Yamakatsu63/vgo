@@ -1,5 +1,7 @@
 package vgo
 
+import "fmt"
+
 type FullAdder struct {
 	a    *Bitvec64
 	b    *Bitvec64
@@ -22,10 +24,12 @@ func (fulladder *FullAdder) exec() {
 func (fulladder *FullAdder) run(in []chan uint64, out []chan uint64) {
 	defer close(out[0])
 	defer close(out[1])
+	defer fmt.Println("end")
 	for {
 		select {
 		case a, ok := <-in[0]:
 			if ok {
+				fmt.Printf("a in fulladder: %d\n", a)
 				fulladder.a.value = a & fulladder.a.mask
 				fulladder.exec()
 				out[0] <- fulladder.q.value
@@ -36,6 +40,7 @@ func (fulladder *FullAdder) run(in []chan uint64, out []chan uint64) {
 			}
 		case b, ok := <-in[1]:
 			if ok {
+				fmt.Printf("b in fulladder: %d\n", b)
 				fulladder.b.value = b & fulladder.b.mask
 				fulladder.exec()
 				out[0] <- fulladder.q.value
@@ -46,6 +51,7 @@ func (fulladder *FullAdder) run(in []chan uint64, out []chan uint64) {
 			}
 		case cin, ok := <-in[2]:
 			if ok {
+				fmt.Printf("cin in fulladder: %d\n", cin)
 				fulladder.cin.value = cin & fulladder.cin.mask
 				fulladder.exec()
 				out[0] <- fulladder.q.value

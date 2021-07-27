@@ -1,5 +1,7 @@
 package vgo
 
+import "fmt"
+
 var Bitmask64 []uint64
 
 func init() {
@@ -38,8 +40,12 @@ func (b *Bitvec64) Set(x uint64) {
 	// b.out <- b.value
 }
 
+func (b *Bitvec64) Get(index int) uint64 {
+	fmt.Printf("get: %d\n", uint64(int(b.value)>>index)&1)
+	return uint64(int(b.value)>>index) & 1
+}
+
 func (b *Bitvec64) Add(x *Bitvec64) *Bitvec64 {
-	// fmt.Println(b.value)
 	b.value += x.value & b.mask
 	b.value &= b.mask
 	b.undef |= x.undef

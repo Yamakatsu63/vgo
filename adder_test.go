@@ -15,7 +15,6 @@ func TestAdder(t *testing.T) {
 	go func() {
 		defer close(a)
 		defer close(b)
-		// defer close(q)
 		a <- 1
 		b <- 2
 		b <- 4
